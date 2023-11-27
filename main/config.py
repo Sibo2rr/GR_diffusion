@@ -70,7 +70,7 @@ class Config:
         end_epoch = 25
         lr = 1e-4
         lr_dec_factor = 0.9
-    train_batch_size = 48 # per GPU
+    train_batch_size = 24 # per GPU
     lambda_mano_verts = 1e4
     lambda_mano_joints = 1e4
     lambda_mano_pose = 10
@@ -79,7 +79,7 @@ class Config:
     ckpt_freq = 25
 
     ## testing config
-    test_batch_size = 43
+    test_batch_size = 24
 
     ## others
     num_thread = 8

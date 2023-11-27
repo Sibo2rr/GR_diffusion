@@ -15,7 +15,7 @@ import torch.nn.functional as F
 from torch import nn
 from .diffusion import PointwiseNet, TransformerDecoder
 from .unet_diffusion import UNet3DModel
-#from .graph import GraphUNet
+from .pc_diffusion import ImagePointDiffusionTransformer
 from config import cfg
 
 
@@ -113,9 +113,8 @@ class D3DP(nn.Module):
         self.register_buffer('posterior_mean_coef2',
                              (1. - alphas_cumprod_prev) * torch.sqrt(alphas) / (1. - alphas_cumprod))
 
-        #self.net = PointwiseNet(in_channels=1, out_channels=1, residual=True)
-        #self.net = TransformerDecoder(in_channels=2334, out_channels=2334)
-        self.net = UNet3DModel()
+        #self.net = UNet3DModel()
+        self.net = ImagePointDiffusionTransformer()
 
 
     def predict_noise_from_start(self, x_t, t, x0):
@@ -133,7 +132,7 @@ class D3DP(nn.Module):
         x_t = x_t / self.scale
         #去噪
         # pred_pose = self.net(inputs_2d, x_t, t)
-        pred_pose, contrast_loss = self.net(x_t, t, inputs_2d, joint)
+        pred_pose = self.net(x_t, t, inputs_2d, joint)
 
         x_start = pred_pose
         #x_start = x_start * self.scale
@@ -284,9 +283,9 @@ class D3DP(nn.Module):
             t = t.squeeze(-1)
 
             # pred_pose = self.net(input_2d, x_poses, t)
-            pred_pose, contrast_loss  = self.net.forward(x_poses, t, input_2d, joint)
+            pred_pose  = self.net.forward(x_poses, t, input_2d, joint)
             loss = F.mse_loss(pred_pose.contiguous().view(-1, 1), input_3d.contiguous().view(-1, 1), reduction='mean')
-            loss = loss + contrast_loss
+            loss = loss
 
             return loss, pred_pose
 
